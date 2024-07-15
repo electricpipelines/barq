@@ -2,32 +2,37 @@
 
 [![Dabarqus Build and Release](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml/badge.svg)](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml)
 
-Dabarqus is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
+**Dabarqus** is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
 
-In our experience with custom RAG solutions, we've encountered two major challenges:
+In our experience with custom RAG solutions, we\'ve encountered two major challenges:
 
-1. Ensuring data privacy and security
+1. Ensuring data privacy and control
 1. Simplifying setup across different environments
+1. Integrating RAG capabilities seamlessly with LLMs
 
-Dabarqus addresses these challenges head-on:
+**Dabarqus addresses these challenges head-on:**
 
-1. Local and Private: Dabarqus runs entirely on your own hardware - be it a PC, laptop, server, or owned-cloud infrastructure. Your data never leaves your control.
-1. Zero Dependencies: Dabarqus is a standalone C++ application with everything built-in. No external dependencies, no installation complexities.
+1. **Local and Private**: Dabarqus runs entirely on your own hardware - be it a PC, laptop, server, or owned-cloud infrastructure. Your data never leaves your control.
+1. **Zero Dependencies**: Dabarqus is a standalone C++ application with everything built-in. No external dependencies, no installation complexities.
+1. **Easy Integration**: Dabarqus features a REST API with JSON output, facilitating smooth integration with existing systems and LLMs.
 
-Key features of Dabarqus:
+**Key features of Dabarqus:**
 
-1. Comprehensive Solution: Dabarqus integrates all essential components for RAG in one package:
-    - Vector database for efficient storage and retrieval
-    - Embedding model for converting text to vector representations
-    - Ingestion and retrieval utilities for seamless data management
-    - Built-in chatbot accessible via browser
-1. Database API Functionality: It operates similarly to a database API, simplifying integration and usage.
-1. Intelligent Querying: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
-1. Enhanced AI Compatibility: The search results can be easily used with various AI models to generate more informed responses.
-1. Cross-Platform Compatibility: Dabarqus runs as an OS service, ensuring seamless operation across Windows, Linux, and macOS.
+1. **Comprehensive Solution**: Dabarqus integrates all essential components for RAG in one package:
 
-For developers, we've also created 'barq', a command-line interface that interacts with Dabarqus via a REST API, providing a familiar and efficient tool for integration and management.
-Dabarqus streamlines the RAG implementation process, offering a robust, flexible, and user-friendly solution that prioritizes data privacy and eliminates dependency issues. Whether you're working on a small-scale project or a large enterprise solution, Dabarqus provides the tools you need for efficient knowledge storage and retrieval, all while keeping your data secure and under your control.
+    - **Vector database** for efficient storage and retrieval
+    - **Embedding model** for converting text to vector representations
+    - **Ingestion and retrieval** utilities for seamless data management
+    - **Built-in chatbot** accessible via browser
+
+1. **Database API Functionality**: It operates similarly to a database API, simplifying integration and usage.
+1. **Intelligent Querying**: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
+1. **Enhanced AI Compatibility**: The search results can be easily used with various AI models to generate more informed responses.
+1. **Cross-Platform Compatibility**: Dabarqus runs as an OS service, ensuring seamless operation across Windows, Linux, and macOS.
+
+For developers, we\'ve also created `barq`, a command-line interface that interacts with Dabarqus via a REST API, providing a familiar and efficient tool for integration and management.
+
+Dabarqus streamlines the RAG implementation process, offering a robust, flexible, and user-friendly solution that prioritizes data privacy and eliminates dependency issues. Whether you\'re working on a small-scale project or a large enterprise solution, Dabarqus provides the tools you need for efficient knowledge storage and retrieval, all while keeping your data secure and under your control.
 
 ## Architecture
 
