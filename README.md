@@ -2,7 +2,7 @@
 
 [![Dabarqus Build and Release](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml/badge.svg)](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml)
 
-We're excited to announce our work on Dabarqus, a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
+Dabarqus is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
 
 In our experience with custom RAG solutions, we've encountered two major challenges:
 
