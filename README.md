@@ -38,7 +38,7 @@ The application has three components: a backend service (called Dabarqus) that r
 - barq is installed alongside Dabarqus, and is placed in the system PATH for easy access from a command line.
 - ODOBO is installed as a desktop application on Windows and MacOS.
 
-## Barq
+## Barq - Command-line interface to Dabarqus
 
 To install: `barq service install`
 To uninstall: `barq service uninstall`
@@ -60,7 +60,7 @@ Usage: `barq retrieve --memory-bank "<memory bank name>"`
 - Example: `barq retrieve --memory-bank documents --query "Tell me about the documents" --query-limit 3`
              will display three answers to the query from the 'documents' memory bank
 
-## API
+## API - REST interface to Dabarqus
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
