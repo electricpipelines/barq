@@ -4,7 +4,7 @@
 
 **Dabarqus** is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
 
-In our experience with custom RAG solutions, we\'ve encountered two major challenges:
+In our experience with custom RAG solutions, we\'ve encountered three major challenges:
 
 1. Ensuring data privacy and control
 1. Simplifying setup across different environments
