@@ -18,11 +18,10 @@ Key features of Dabarqus:
 
 1. Comprehensive Solution: Dabarqus integrates all essential components for RAG in one package:
 
-- Vector database for efficient storage and retrieval
-- Embedding model for converting text to vector representations
-- Ingestion and retrieval utilities for seamless data management
-- Built-in chatbot accessible via browser
-
+  - Vector database for efficient storage and retrieval
+  - Embedding model for converting text to vector representations
+  - Ingestion and retrieval utilities for seamless data management
+  - Built-in chatbot accessible via browser
 
 1. Database API Functionality: It operates similarly to a database API, simplifying integration and usage.
 1. Intelligent Querying: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
