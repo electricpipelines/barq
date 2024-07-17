@@ -90,6 +90,7 @@ Usage: `barq retrieve --memory-bank "<memory bank name>"`
 | GET | /api/silk/disable | Disable memories | None |
 | GET | /api/silk/memorybanks | Get memory banks information | None |
 | GET | /api/silk/memorybank/activate | Activate a memory bank | `memorybank` |
+| GET | /api/silk/memorybank/deactivate | Deactivate a memory bank | `memorybank`, `all` |
 | GET | /api/silk/query | Perform a semantic query | (Parameters handled by Silk retriever) |
 | GET | /api/silk/health | Check the health of the Silk retriever | None |
 | GET | /api/silk/model/metadata | Get model metadata from the Silk retriever | (Parameters handled by Silk retriever) |
