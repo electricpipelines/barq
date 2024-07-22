@@ -2,7 +2,7 @@
 
 [![Dabarqus Build and Release](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml/badge.svg)](https://github.com/electricpipelines/dabarqus/actions/workflows/build-and-release.yaml)
 
-**Dabarqus** is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed for developers who prioritize privacy, performance, and ease of deployment.
+**Dabarqus** is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed to deliver state-of-the-art RAG on-premise at a fraction of the cost of building from scratch.
 
 In our experience with custom RAG solutions, we\'ve encountered three major challenges:
 
@@ -25,7 +25,7 @@ In our experience with custom RAG solutions, we\'ve encountered three major chal
     - **Ingestion and retrieval** utilities for seamless data management
     - **Built-in chatbot** accessible via browser
 
-1. **Database API Functionality**: It operates similarly to a database API, simplifying integration and usage.
+1. **Modern REST API**: Simplifies integration and using by presenting a fully documented, modern REST API for usage.
 1. **Intelligent Querying**: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
 1. **Enhanced AI Compatibility**: The search results can be easily used with various AI models to generate more informed responses.
 1. **Cross-Platform Compatibility**: Dabarqus runs as an OS service, ensuring seamless operation across Windows, Linux, and macOS.
