@@ -23,7 +23,7 @@ In our experience with custom RAG solutions, we\'ve encountered three major chal
     - **Ingestion and retrieval** utilities for seamless data management
     - **Built-in chatbot** accessible via browser
 
-1. **Modern REST API**: Simplifies integration and using by presenting a fully documented, modern REST API for usage.
+1. **Modern REST API**: Simplifies integration and usage by providing a fully documented, modern REST API.
 1. **Intelligent Querying**: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
 1. **Enhanced AI Compatibility**: The search results can be easily used with various AI models to generate more informed responses.
 1. **Cross-Platform Compatibility**: Dabarqus runs as an OS service, ensuring seamless operation across Windows, Linux, and macOS.
@@ -61,7 +61,7 @@ Usage: `barq retrieve --memory-bank "<memory bank name>"`
 
 - Example: `barq retrieve --memory-bank documents`
 - Example: `barq retrieve --memory-bank documents --query "Tell me about the documents" --query-limit 3`
-             will display three answers to the query from the 'documents' memory bank
+             This will display three answers to the query from the 'documents' memory bank
 
 ## API - REST interface to Dabarqus
 
