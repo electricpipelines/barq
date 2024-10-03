@@ -1,6 +1,6 @@
 # Dabarqus
 
-**Dabarqus** is a revolutionary all-in-one RAG (Retrieval-Augmented Generation) solution designed to deliver state-of-the-art RAG on-premise at a fraction of the cost of building from scratch.
+**Dabarqus** is an all-in-one RAG (Retrieval-Augmented Generation) native (Linux, macOS, and Windows) server designed to deliver state-of-the-art RAG on-premise at a fraction of the cost of building from scratch.
 
 In our experience with custom RAG solutions, we\'ve encountered three major challenges:
 
@@ -8,11 +8,38 @@ In our experience with custom RAG solutions, we\'ve encountered three major chal
 1. Simplifying setup across different environments
 1. Integrating RAG capabilities seamlessly with LLMs
 
-**Dabarqus addresses these challenges head-on:**
+**How Dabarqus addresses these challenges:**
 
 1. **Local and Private**: Dabarqus runs entirely on your own hardware - be it a PC, laptop, server, or owned-cloud infrastructure. Your data never leaves your control.
 1. **Zero Dependencies**: Dabarqus is a standalone C++ application with everything built-in. No external dependencies, no installation complexities.
 1. **Easy Integration**: Dabarqus features a REST API with JSON output, facilitating smooth integration with existing systems and LLMs.
+
+## **Quick start**
+
+### Linux
+
+1. Unzip the Dabarqus file into a folder
+```
+unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+cd Dabarqus-linux-DOWNLOADED_VERSION
+./bin/barq service install
+```
+2. Open a browser and go to `http://localhost:6568/admin`
+
+### macOS
+1. Unzip the Dabarqus file into a folder
+```
+unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+cd Dabarqus-linux-DOWNLOADED_VERSION
+./bin/barq service install
+```
+2. Open a browser and go to `http://localhost:6568/admin`
+
+### Windows
+1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
+2. Double click the Dabarqus icon
+
+## About Dabarqus
 
 **Key features of Dabarqus:**
 
@@ -44,6 +71,7 @@ The application has three components: a backend service (called Dabarqus) that r
 ## Barq - Command-line interface to Dabarqus
 
 To install: `barq service install`
+
 To uninstall: `barq service uninstall`
 
 ### Using with the CLI
