@@ -5,11 +5,8 @@ defaults:
     shell: bash
 
 on:
-  push:
-    branches:
-      - develop
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  repository_dispatch:
+    types: [dabarqus_push]
 
 jobs:
   build-and-release:
