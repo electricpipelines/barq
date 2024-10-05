@@ -1,0 +1,336 @@
+name: Dabarqus Build and Release
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  build-and-release:
+    permissions: write-all
+    runs-on: ${{ matrix.runner }}
+    env:
+      # Set the deployment repository owner and name,
+      # which is different from the current repository
+      GITHUB_DEPLOYMENT_REPO_OWNER: electricpipelines
+      GITHUB_DEPLOYMENT_REPO_NAME: barq
+      GITHUB_SOURCE_REPO_OWNER: electricpipelines
+      GITHUB_SOURCE_REPO_NAME: dabarqus
+      GH_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
+      GITHUB_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
+      RELEASE_TYPE: release
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: macos
+            runner: [self-hosted, macOS]
+          - platform: macos-metal
+            runner: [macos-latest]
+          - platform: windows
+            runner: [self-hosted, windows]
+          - platform: windows-cublas
+            runner: [self-hosted, windows, cuda]
+          - platform: linux
+            runner: [self-hosted, docker]
+          - platform: linux-cublas
+            runner: [self-hosted, docker, cuda]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GITHUB_SOURCE_REPO_OWNER }}/${{ env.GITHUB_SOURCE_REPO_NAME }}
+          token: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }}
+          submodules: recursive
+
+      - name: Set Git Bash as default shell for Windows and Linux
+        if: startsWith(matrix.platform, 'windows') || startsWith(matrix.platform, 'linux')
+        shell: pwsh
+        run: |
+          echo "Setting up Git Bash as default shell"
+          echo "C:/Program Files/Git/bin" >> $env:GITHUB_PATH
+
+      - name: Check if runner is self-hosted
+        id: check-runner
+        run: |
+          if [[ "${{ toJson(matrix.runner) }}" == *"self-hosted"* ]]; then
+            echo "is_self_hosted=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_self_hosted=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if runner has Docker
+        id: check-for-docker
+        run: |
+          if [[ "${{ toJson(matrix.runner) }}" == *"docker"* ]]; then
+            echo "has_docker=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_docker=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install ccache (non-self-hosted only)
+        # Github's macOS runners
+        if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
+        run: brew install ccache
+
+      - name: Configure ccache (non-self-hosted only)
+        # Github's macOS runners
+        if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
+        run: |
+          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESS=true" >> $GITHUB_ENV
+          echo "CCACHE_COMPRESSLEVEL=6" >> $GITHUB_ENV
+          echo "CCACHE_MAXSIZE=400M" >> $GITHUB_ENV
+
+      - name: Cache ccache files (non-self-hosted only)
+        # Github's macOS runners
+        if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
+        uses: actions/cache@v3
+        with:
+          path: .ccache
+          key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ matrix.platform }}-
+
+      - name: Extract Package Version from version.txt
+        run: |
+          PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+      - name: Install the Apple developer certificates
+        if: matrix.platform == 'macos' || matrix.platform == 'macos-metal'
+        env:
+          APP_CERTIFICATE_BASE64: ${{ secrets.MACOS_APP_CERTIFICATE_BASE64 }}
+          INSTALLER_CERTIFICATE_BASE64: ${{ secrets.MACOS_INSTALLER_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          CSC_INSTALLER_LINK: ${{ secrets.MACOS_INSTALLER_CERTIFICATE_BASE64 }}
+          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_P12_PASSWORD }}
+        run: |
+          echo "Creating variables"
+          APP_CERTIFICATE_PATH=$RUNNER_TEMP/app_certificate.p12
+          INSTALLER_CERTIFICATE_PATH=$RUNNER_TEMP/installer_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          echo "Importing certificates from secrets"
+          echo -n "$APP_CERTIFICATE_BASE64" | base64 --decode -o $APP_CERTIFICATE_PATH
+          echo -n "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode -o $INSTALLER_CERTIFICATE_PATH
+
+          echo "Creating temporary keychain"
+          security -v create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security -v set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          echo "Importing certificates to keychain"
+          security -v import $APP_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security -v import $INSTALLER_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+
+          echo "Setting keychain ACLs"
+          security -v set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          echo "Setting default keychain"
+          security -v list-keychain -d user -s $KEYCHAIN_PATH
+
+          echo "Extracting Apple Developer Identity"
+          IDENTITY_INFO=$(security find-identity -v -p codesigning $KEYCHAIN_PATH)
+          if [ $? -ne 0 ]; then
+            echo "Error: Failed to find identities. Keychain contents:"
+            security dump-keychain $KEYCHAIN_PATH
+            exit 1
+          fi
+          
+          echo "All codesigning identities:"
+          echo "$IDENTITY_INFO"
+          
+          FULL_IDENTITY=$(echo "$IDENTITY_INFO" | grep "Developer ID Application" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p')
+          
+          if [ -z "$FULL_IDENTITY" ]; then
+            echo "Error: Failed to extract Developer ID Application identity."
+            exit 1
+          fi
+          
+          # Extract just the name and team ID without the prefix
+          IDENTITY=$(echo "$FULL_IDENTITY" | sed 's/Developer ID Application: //')
+          
+          echo "CSC_NAME=$IDENTITY" >> $GITHUB_ENV
+          echo "Extracted identity for signing: $IDENTITY"
+
+      - name: Install build tools on macOS Metal via Homebrew
+        if: matrix.platform == 'macos-metal'
+        run: brew install python-setuptools autoconf automake autoconf-archive
+
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Install VCPKG
+        if: matrix.platform == 'macos-metal'
+        run: |
+          git clone https://github.com/microsoft/vcpkg
+          ./vcpkg/bootstrap-vcpkg.sh
+          export VCPKG_INSTALLATION_ROOT=$(pwd)/vcpkg
+          echo "VCPKG_INSTALLATION_ROOT=${VCPKG_INSTALLATION_ROOT}" >> $GITHUB_ENV
+          echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> $GITHUB_ENV
+
+      - name: Cache npm dependencies
+        if: steps.check-for-docker.outputs.has_docker == 'false'
+        uses: actions/cache@v4
+        with:
+          path: '~/.npm'
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up Docker
+        if: steps.check-for-docker.outputs.has_docker == 'true'
+        run: |
+          if ! command -v docker &> /dev/null; then
+            echo "Docker not found. Please install Docker on your self-hosted runner."
+            exit 1
+          fi
+
+      - name: Docker Build, Package and Release to GitHub
+        if: steps.check-for-docker.outputs.has_docker == 'true'
+        env:
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+        run: |
+          mkdir -p out/ccache
+          mkdir -p out/vcache
+
+          # Convert Windows path to Docker-compatible path
+          WORKSPACE_PATH=$(cygpath -w "${{ github.workspace }}" | sed 's/\\/\//g')
+
+          docker build -t dabarqus-builder -f Dockerfile.build .
+
+          docker run --rm --gpus all \
+            -v "${WORKSPACE_PATH}:/dabarqus_src" \
+            -v "${WORKSPACE_PATH}/out/ccache:/ccache" \
+            -v "${WORKSPACE_PATH}/out/vcache:/vcache" \
+            -e BUILD_PLATFORM=${{ matrix.platform }} \
+            -e GH_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
+            -e GITHUB_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
+            -e GITHUB_DEPLOYMENT_REPO_OWNER=${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }} \
+            -e GITHUB_DEPLOYMENT_REPO_NAME=${{ env.GITHUB_DEPLOYMENT_REPO_NAME }} \
+            -e RELEASE_TYPE=${{ env.RELEASE_TYPE }} \
+            dabarqus-builder
+
+      - name: Native Build, Package and Release to GitHub
+        if: steps.check-for-docker.outputs.has_docker == 'false'
+        shell: pwsh
+        env:
+          APPLE_ID: ${{ secrets.MACOS_APP_NOTARIZATION_USERID }}
+          APPLE_PASSWORD: ${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}
+          APPLE_APP_SPECIFIC_PASSWORD : ${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}
+          DABARQUS_FINE_GRAINED_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }}
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+        run: |
+            ./build.ps1 -BuildPlatform ${{ matrix.platform }}
+
+      - name: Create Zip Archive
+        run: |
+          PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
+          ZIP_NAME="dabarqus-${{ matrix.platform }}-${PACKAGE_VERSION}.zip"
+          
+          cd out/install/${{ matrix.platform }}
+          
+          # Remove unnecessary files
+          if [[ "${{ matrix.platform }}" == windows* ]]; then
+            find . -type f ! \( -name "*.dll" -o -name "*.exe" -o -path "./bin/*" \) -delete
+          elif [[ "${{ matrix.platform }}" == linux* ]]; then
+            find . -type f ! \( -name "*.so" -o -path "./bin/*" \) -delete
+          elif [[ "${{ matrix.platform }}" == macos* ]]; then
+            find . -type f ! \( -name "*.dylib" -o -path "./bin/*" \) -delete
+          fi
+          
+          find ./bin -type f -name "*.py" -delete
+          
+          # Remove empty directories
+          find . -type d -empty -delete
+          
+          # Create the zip archive
+          zip -r "${ZIP_NAME}" .
+          
+          # Move the zip file to the root of the workspace
+          mv "${ZIP_NAME}" ../../../
+          
+          ls -l ../../../${ZIP_NAME}
+
+          # Go back to the root directory
+          cd ../../../
+
+          # Find the exact path of the zip file
+          ZIP_PATH=$(find . -name "${ZIP_NAME}")
+          
+          if [ -z "$ZIP_PATH" ]; then
+            echo "Error: Zip file not found"
+            exit 1
+          fi
+
+          echo "ZIP_PATH=${ZIP_PATH}" >> $GITHUB_ENV
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+
+      - name: Upload Zip Archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
+
+      - name: Release Zip Archive
+        env:
+          GH_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }}
+          PUBLISH_OWNER: ${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}
+          PUBLISH_REPO: ${{ env.GITHUB_DEPLOYMENT_REPO_NAME }}
+          RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
+        run: |
+          PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
+          if gh release view "v${PACKAGE_VERSION}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}" &>/dev/null; then
+            echo "Release v${PACKAGE_VERSION} exists. Uploading zip file to existing release."
+            gh release upload "v${PACKAGE_VERSION}" "${ZIP_NAME}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}" --clobber
+          else
+            echo "Release v${PACKAGE_VERSION} does not exist. Creating ${RELEASE_TYPE} release and uploading zip file."
+            if [ "$RELEASE_TYPE" = "draft" ]; then
+              gh release create "v${PACKAGE_VERSION}" "${ZIP_NAME}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}" --draft
+            else
+              gh release create "v${PACKAGE_VERSION}" "${ZIP_NAME}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}"
+            fi
+          fi
+
+      - name: Create and Push Git Tag if Not Exists
+        run: |
+          PACKAGE_VERSION=${{ env.PACKAGE_VERSION }}
+          echo "Checking for existing tag for version $PACKAGE_VERSION..."
+
+          # Fetch tags to ensure we have the latest tags in the local git history
+          git fetch --tags
+
+          # Check if the tag already exists
+          if git rev-parse "v$PACKAGE_VERSION" >/dev/null 2>&1; then
+            echo "Tag v$PACKAGE_VERSION already exists. Skipping tag creation."
+          else
+            echo "Tag v$PACKAGE_VERSION does not exist. Creating and pushing tag..."
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git tag -a "v$PACKAGE_VERSION" -m "Release version $PACKAGE_VERSION"
+            git push origin "v$PACKAGE_VERSION"
+            echo "Tag v$PACKAGE_VERSION created and pushed."
+          fi
+
+      - name: Save Version Tag Name
+        run: echo "v${{ env.PACKAGE_VERSION }}" > tag.txt
+
+      - name: Upload Version Tag Name as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tag-name
+          path: tag.txt
+          overwrite: true
