@@ -27,7 +27,7 @@ jobs:
       matrix:
         include:
           - platform: macos
-            runner: [self-hosted, macOS]
+            runner: [macos-12]
           - platform: macos-metal
             runner: [macos-latest]
           - platform: windows
