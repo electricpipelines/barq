@@ -23,7 +23,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
       RELEASE_TYPE: release
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - platform: macos
