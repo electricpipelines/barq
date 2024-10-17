@@ -160,7 +160,7 @@ jobs:
           echo "Extracted identity for signing: $IDENTITY"
 
       - name: Install build tools on macOS Metal via Homebrew
-        if: matrix.platform == 'macos-metal'
+        if: matrix.platform == 'macos' || matrix.platform == 'macos-metal'
         run: brew install python-setuptools autoconf automake autoconf-archive
 
       - uses: actions/github-script@v7
@@ -170,7 +170,7 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Install VCPKG
-        if: matrix.platform == 'macos-metal'
+        if: matrix.platform == 'macos' || matrix.platform == 'macos-metal'
         run: |
           git clone https://github.com/microsoft/vcpkg
           ./vcpkg/bootstrap-vcpkg.sh
