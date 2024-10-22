@@ -23,7 +23,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
       RELEASE_TYPE: release
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - platform: macos
@@ -160,7 +160,7 @@ jobs:
           echo "Extracted identity for signing: $IDENTITY"
 
       - name: Install build tools on macOS Metal via Homebrew
-        if: matrix.platform == 'macos-metal'
+        if: matrix.platform == 'macos' || matrix.platform == 'macos-metal'
         run: brew install python-setuptools autoconf automake autoconf-archive
 
       - uses: actions/github-script@v7
@@ -170,7 +170,7 @@ jobs:
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
       - name: Install VCPKG
-        if: matrix.platform == 'macos-metal'
+        if: matrix.platform == 'macos' || matrix.platform == 'macos-metal'
         run: |
           git clone https://github.com/microsoft/vcpkg
           ./vcpkg/bootstrap-vcpkg.sh
@@ -233,6 +233,27 @@ jobs:
         run: |
             ./build.ps1 -BuildPlatform ${{ matrix.platform }}
 
+      - name: Sign macOS Binaries and Libraries
+        if: startsWith(matrix.platform, 'macos')
+        run: |
+          cd out/install/${{ matrix.platform }}
+          
+          # Sign executables in ./bin
+          echo "Signing executables in ./bin"
+          find ./bin -type f -perm +111 | while read file; do
+            echo "Signing executable: $file"
+            codesign --force --options runtime --sign "${{ env.CSC_NAME }}" "$file"
+          done
+          
+          # Sign libraries in ./lib
+          echo "Signing libraries in ./lib"
+          find ./lib -type f -name "*.dylib" | while read file; do
+            echo "Signing library: $file"
+            codesign --force --options runtime --sign "${{ env.CSC_NAME }}" "$file"
+          done
+          
+          cd ../../..
+
       - name: Create Zip Archive
         run: |
           PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
@@ -257,6 +278,18 @@ jobs:
           # Create the zip archive
           zip -r "${ZIP_NAME}" .
           
+          # For macOS platforms, notarize the zip archive
+          if [[ "${{ matrix.platform }}" == macos* ]]; then
+            # Notarize the zip archive
+            xcrun notarytool submit "${ZIP_NAME}" --wait \
+              --apple-id "${{ secrets.MACOS_APP_NOTARIZATION_USERID }}" \
+              --password "${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}" \
+              --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
+            
+            # Staple the notarization ticket to the zip archive
+            # xcrun stapler staple "${ZIP_NAME}"
+          fi
+
           # Move the zip file to the root of the workspace
           mv "${ZIP_NAME}" ../../../
           
