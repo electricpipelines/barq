@@ -281,7 +281,7 @@ jobs:
 
           # Create the zip archive with permission preservation
           if [[ "${{ matrix.platform }}" == linux* ]] || [[ "${{ matrix.platform }}" == macos* ]]; then
-            zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*" --preserve-permissions
+            zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           else
             zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           fi
