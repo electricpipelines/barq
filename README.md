@@ -1,18 +1,55 @@
 # Dabarqus
 
-**Dabarqus** is an all-in-one RAG (Retrieval-Augmented Generation) native (Linux, macOS, and Windows) server designed to deliver state-of-the-art RAG on-premise at a fraction of the cost of building from scratch.
+**Dabarqus: Community Edition** &ndash; Zero to RAG in minutes. Chat with your PDFs, summarize emails and messaging, and digest a vast range of facts, figures, and reports. A dash of genius for your LLM.
 
-In our experience with custom RAG solutions, we\'ve encountered three major challenges:
+## Table of Contents
+1. [Features](#features)
+2. [Quick Start](#quick-start)
+   - [Linux](#linux)
+   - [macOS](#macos)
+   - [Windows](#windows)
+3. [Barq - Command-line Interface](#barq---command-line-interface-to-dabarqus)
+   - [Using with the CLI](#using-with-the-cli)
+     - [Store](#store)
+     - [Retrieve](#retrieve)
+4. [API - REST Interface](#api---rest-interface-to-dabarqus)
+   - [Using the API](#using-the-api)
+5. [Examples](#examples)
 
-1. Ensuring data privacy and control
-1. Simplifying setup across different environments
-1. Integrating RAG capabilities seamlessly with LLMs
+## Features
 
-**How Dabarqus addresses these challenges:**
+1. **Ingest documents, databases, and APIs**: Ingest diverse data sources like PDFs*, emails, and raw data.
+   - No matter where your data resides, Dabarqus can make it available to your LLM
 
-1. **Local and Private**: Dabarqus runs entirely on your own hardware - be it a PC, laptop, server, or owned-cloud infrastructure. Your data never leaves your control.
-1. **Zero Dependencies**: Dabarqus is a standalone C++ application with everything built-in. No external dependencies, no installation complexities.
-1. **Easy Integration**: Dabarqus features a REST API with JSON output, facilitating smooth integration with existing systems and LLMs.
+2. **LLM-Style Prompting**: Use simple, LLM-style prompts when speaking to your memory banks.
+   - Dabarqus will retrieve relevant data using the same prompt you give your LLM
+   - No need to construct special queries or learn a new query language
+
+3. **REST API**: Comprehensive control interface for downloading models, prompting semantic indexes, and even LLM inference.
+   - REST is a standard interface that enjoys wide adoption, so your team doesn't need to learn a new, complex system
+   - Allows comprehensive integration with existing development tools for easy adoption
+
+4. **Multiple Semantic Indexes (Memory Banks)**: Group your data into separate semantic indexes (memory banks).
+   - Keep your data organized by subject matter, category, or whatever grouping you like
+   - Memory banks are portable, so you can create and use them wherever you like
+
+5. **SDKs**: Native SDKs in [Python](https://pypi.org/project/dabarqus/) and [Javascript](https://www.npmjs.com/package/dabarqus).
+   - Easily integrates with Python and Javascript projects
+
+6. **LLM-Friendly Output**: Produces LLM-ready output that works with ChatGPT, Ollama, and any other LLM provider
+   - Works seamlessly with the LLM of your choice
+
+7. **Admin Dashboard**: Monitor performance, test memory banks, and make changes in an easy-to-use UI
+   - Easy access to Dabarqus features
+   - Monitor app performance with real-time graphs
+
+8. **Mac, Linux, and Windows Support**: Runs natively with zero dependencies on all platforms: MacOS (Intel or Metal), Linux, and Windows (CPU or GPU)
+   - Runs on whatever platform you use
+
+9. **LLM Inference**: Chat with LLM models right through the Dabarqus API/SDKs
+   - Built-in chatbot capabilities for use in your applications
+
+*Only PDFs supported for the [community edition](dabarqus.com). 
 
 ## **Quick start**
 
@@ -38,35 +75,6 @@ cd Dabarqus-linux-DOWNLOADED_VERSION
 ### Windows
 1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
 2. Double click the Dabarqus icon
-
-## About Dabarqus
-
-**Key features of Dabarqus:**
-
-1. **Comprehensive Solution**: Dabarqus integrates all essential components for RAG in one package:
-
-    - **Vector database** for efficient storage and retrieval
-    - **Embedding model** for converting text to vector representations
-    - **Ingestion and retrieval** utilities for seamless data management
-    - **Built-in chatbot** accessible via browser
-
-1. **Modern REST API**: Simplifies integration and usage by providing a fully documented, modern REST API.
-1. **Intelligent Querying**: Send queries or chat inputs to receive relevant documents, ranked by relevance to your input.
-1. **Enhanced AI Compatibility**: The search results can be easily used with various AI models to generate more informed responses.
-1. **Cross-Platform Compatibility**: Dabarqus runs as an OS service, ensuring seamless operation across Windows, Linux, and macOS.
-
-For developers, we\'ve also created `barq`, a command-line interface that interacts with Dabarqus via a REST API, providing a familiar and efficient tool for integration and management.
-
-Dabarqus streamlines the RAG implementation process, offering a robust, flexible, and user-friendly solution that prioritizes data privacy and eliminates dependency issues. Whether you\'re working on a small-scale project or a large enterprise solution, Dabarqus provides the tools you need for efficient knowledge storage and retrieval, all while keeping your data secure and under your control.
-
-## Architecture
-
-The application has three components: a backend service (called Dabarqus) that runs as an OS service at startup, a command line interface (called barq) for developers, and an Electron UI (called ODOBO) for end users.
-
-- Dabarqus is the engine of the application. barq and ODOBO access it via a REST API.
-- Dabarqus is installed as a Windows, Linux or MacOS service that runs at all times.
-- barq is installed alongside Dabarqus, and is placed in the system PATH for easy access from a command line.
-- ODOBO is installed as a desktop application on Windows and MacOS.
 
 ## Barq - Command-line interface to Dabarqus
 
@@ -127,3 +135,9 @@ Usage: `barq retrieve --memory-bank "<memory bank name>"`
 ### Using the API
 
 - Example: `curl http://localhost:6568/api/silk/query?q=Tell%20me%20about%20the%20documents&limit=3&memorybank=docs`
+
+## Examples
+Examples of Dabarqus in action can be found in this repo under **examples**.  
+- PythonPDFChatbot-RESTAPI: An example chatbot program using Dabarqus via the REST API to chat with your PDFs.
+- PythonPDFChatbot-PythonSDK: An example chatbot program using Dabarqus via the [Python SDK](https://pypi.org/project/dabarqus/) to chat with your PDFs.
+- StoreFiles: A Python example of storing documents in to a memory bank (sematic index) using the Python SDK

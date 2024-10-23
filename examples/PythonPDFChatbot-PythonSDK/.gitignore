@@ -1,0 +1,39 @@
+# Python virtual environment
+*venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Retrieval results
+retrievals/
+
+# IDE-specific files (e.g., for VSCode)
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+
+# Build directories
+build/
+dist/
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Conversation logs 
+conversation*

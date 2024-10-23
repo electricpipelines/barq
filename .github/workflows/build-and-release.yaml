@@ -295,7 +295,7 @@ jobs:
               --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
 
             # Staple the notarization ticket to the zip archive
-            xcrun stapler staple "${ZIP_NAME}"
+            # xcrun stapler staple "${ZIP_NAME}"
           fi
 
           # Move the zip file to the root of the workspace
