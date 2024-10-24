@@ -1,8 +1,11 @@
 # Dabarqus
 
-**Dabarqus: Community Edition** &ndash; Zero to RAG in minutes. Chat with your PDFs, summarize emails and messaging, and digest a vast range of facts, figures, and reports. A dash of genius for your LLM.
+**Dabarqus** &ndash; Zero to RAG in minutes. Chat with your PDFs, summarize emails and messaging, and digest a vast range of facts, figures, and reports. A dash of genius for your LLM.
+
+Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
 
 ## Table of Contents
+
 1. [Features](#features)
 2. [Quick Start](#quick-start)
    - [Linux](#linux)
@@ -49,30 +52,36 @@
 9. **LLM Inference**: Chat with LLM models right through the Dabarqus API/SDKs
    - Built-in chatbot capabilities for use in your applications
 
-*Only PDFs supported for the [community edition](dabarqus.com). 
+*Only PDFs supported for the [community edition](dabarqus.com).
 
 ## **Quick start**
 
 ### Linux
 
 1. Unzip the Dabarqus file into a folder
-```
-unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
-cd Dabarqus-linux-DOWNLOADED_VERSION
-./bin/barq service install
-```
+
+    ```bash
+    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+    cd Dabarqus-linux-DOWNLOADED_VERSION
+    ./bin/barq service install
+    ```
+
 2. Open a browser and go to `http://localhost:6568/admin`
 
 ### macOS
+
 1. Unzip the Dabarqus file into a folder
-```
-unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
-cd Dabarqus-linux-DOWNLOADED_VERSION
-./bin/barq service install
-```
+
+    ```bash
+    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+    cd Dabarqus-linux-DOWNLOADED_VERSION
+    ./bin/barq service install
+    ```
+
 2. Open a browser and go to `http://localhost:6568/admin`
 
 ### Windows
+
 1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
 2. Double click the Dabarqus icon
 
@@ -89,7 +98,6 @@ To uninstall: `barq service uninstall`
 Usage: `barq store --input-path <path to folder> --memory-bank "<memory bank name>"`
 
 Example: `barq store --input-path C:\docs --memory-bank documents`
-
 
 #### Retrieve
 
@@ -137,7 +145,9 @@ Usage: `barq retrieve --memory-bank "<memory bank name>"`
 - Example: `curl http://localhost:6568/api/silk/query?q=Tell%20me%20about%20the%20documents&limit=3&memorybank=docs`
 
 ## Examples
-Examples of Dabarqus in action can be found in this repo under **examples**.  
+
+Examples of Dabarqus in action can be found in this repo under **examples**.
+
 - PythonPDFChatbot-RESTAPI: An example chatbot program using Dabarqus via the REST API to chat with your PDFs.
 - PythonPDFChatbot-PythonSDK: An example chatbot program using Dabarqus via the [Python SDK](https://pypi.org/project/dabarqus/) to chat with your PDFs.
 - StoreFiles: A Python example of storing documents in to a memory bank (sematic index) using the Python SDK
