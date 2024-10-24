@@ -6,11 +6,11 @@ Dabarqus is a stand alone application that implements a complete RAG solution. I
 
 ## Table of Contents
 
-1. [Features](#features)
-2. [Quick Start](#quick-start)
-   - [Linux](#linux)
+1. [Quick Start](#quick-start)
+   - [Ubuntu](#ubuntu)
    - [macOS](#macos)
    - [Windows](#windows)
+2. [Features](#features)
 3. [Barq - Command-line Interface](#barq---command-line-interface-to-dabarqus)
    - [Using with the CLI](#using-with-the-cli)
      - [Store](#store)
@@ -18,6 +18,46 @@ Dabarqus is a stand alone application that implements a complete RAG solution. I
 4. [API - REST Interface](#api---rest-interface-to-dabarqus)
    - [Using the API](#using-the-api)
 5. [Examples](#examples)
+
+## **Quick start**
+
+### Ubuntu
+
+Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For the CUDA (cublas) version, you will need to install the NVIDIA driver. The CPU version does not require any additional software. Note that to use the CUDA version, you will need to have an NVIDIA GPU with CUDA support, and to download the CUDA version of Dabarqus.
+
+0. To install NVIDIA drivers on Ubuntu:
+
+    ```bash
+    sudo ubuntu-drivers install
+    ```
+
+1. Unzip the Dabarqus file into a folder
+
+    ```bash
+    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+    cd Dabarqus-linux-DOWNLOADED_VERSION
+    chmod +x ./bin/*
+    ./bin/barq service install
+    ```
+
+2. Open a browser and go to `http://localhost:6568/admin`
+
+### macOS
+
+1. Unzip the Dabarqus file into a folder
+
+    ```bash
+    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
+    cd Dabarqus-linux-DOWNLOADED_VERSION
+    ./bin/barq service install
+    ```
+
+2. Open a browser and go to `http://localhost:6568/admin`
+
+### Windows
+
+1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
+2. Double click the Dabarqus icon
 
 ## Features
 
@@ -53,37 +93,6 @@ Dabarqus is a stand alone application that implements a complete RAG solution. I
    - Built-in chatbot capabilities for use in your applications
 
 *Only PDFs supported for the [community edition](dabarqus.com).
-
-## **Quick start**
-
-### Linux
-
-1. Unzip the Dabarqus file into a folder
-
-    ```bash
-    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
-    cd Dabarqus-linux-DOWNLOADED_VERSION
-    ./bin/barq service install
-    ```
-
-2. Open a browser and go to `http://localhost:6568/admin`
-
-### macOS
-
-1. Unzip the Dabarqus file into a folder
-
-    ```bash
-    unzip Dabarqus-linux-DOWNLOADED_VERSION.zip
-    cd Dabarqus-linux-DOWNLOADED_VERSION
-    ./bin/barq service install
-    ```
-
-2. Open a browser and go to `http://localhost:6568/admin`
-
-### Windows
-
-1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
-2. Double click the Dabarqus icon
 
 ## Barq - Command-line interface to Dabarqus
 
