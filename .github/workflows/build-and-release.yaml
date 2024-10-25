@@ -261,6 +261,31 @@ jobs:
 
           cd out/install/${{ matrix.platform }}
 
+          # # Remove unnecessary files
+          # if [[ "${{ matrix.platform }}" == windows* ]]; then
+          #   find . -type f ! \( -name "*.dll" -o -name "*.exe" -o -path "./bin/*" \) -delete
+          # elif [[ "${{ matrix.platform }}" == linux* ]]; then
+          #   find . -type f ! \( -name "*.so" -o -path "./bin/*" \) -delete
+          #   # Ensure executables have proper permissions
+          #   find ./bin -type f -exec chmod 755 {} \;
+          # elif [[ "${{ matrix.platform }}" == macos* ]]; then
+          #   find . -type f ! \( -name "*.dylib" -o -path "./bin/*" \) -delete
+          #   # Ensure executables have proper permissions
+          #   find ./bin -type f -exec chmod 755 {} \;
+          # fi
+
+          # find ./bin -type f -name "*.py" -delete
+
+          # # Remove empty directories
+          # find . -type d -empty -delete
+
+          # # Create the zip archive with permission preservation
+          # if [[ "${{ matrix.platform }}" == linux* ]] || [[ "${{ matrix.platform }}" == macos* ]]; then
+          #   zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          # else
+          #   zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          # fi
+          
           # Remove unnecessary files
           if [[ "${{ matrix.platform }}" == windows* ]]; then
             find . -type f ! \( -name "*.dll" -o -name "*.exe" -o -path "./bin/*" \) -delete
@@ -268,6 +293,8 @@ jobs:
             find . -type f ! \( -name "*.so" -o -path "./bin/*" \) -delete
             # Ensure executables have proper permissions
             find ./bin -type f -exec chmod 755 {} \;
+            # Preserve symlinks in lib directory
+            find ./lib -type l -exec chmod 777 {} \;
           elif [[ "${{ matrix.platform }}" == macos* ]]; then
             find . -type f ! \( -name "*.dylib" -o -path "./bin/*" \) -delete
             # Ensure executables have proper permissions
@@ -279,8 +306,13 @@ jobs:
           # Remove empty directories
           find . -type d -empty -delete
 
-          # Create the zip archive with permission preservation
-          if [[ "${{ matrix.platform }}" == linux* ]] || [[ "${{ matrix.platform }}" == macos* ]]; then
+          # Create the zip archive with permission and symlink preservation
+          if [[ "${{ matrix.platform }}" == linux* ]]; then
+            # -y stores symlinks as symlinks
+            # -X preserves permissions
+            # -r recursive
+            zip -r -y -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          elif [[ "${{ matrix.platform }}" == macos* ]]; then
             zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           else
             zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
