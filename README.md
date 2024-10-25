@@ -1,8 +1,6 @@
 # Dabarqus
 
-**Dabarqus** &ndash; Zero to RAG in minutes. Chat with your PDFs, summarize emails and messaging, and digest a vast range of facts, figures, and reports. A dash of genius for your LLM.
-
-Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
+**Dabarqus** &ndash; Zero to RAG in minutes. Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
 
 ## Table of Contents
 
@@ -160,3 +158,7 @@ Examples of Dabarqus in action can be found in this repo under **examples**.
 - PythonPDFChatbot-RESTAPI: An example chatbot program using Dabarqus via the REST API to chat with your PDFs.
 - PythonPDFChatbot-PythonSDK: An example chatbot program using Dabarqus via the [Python SDK](https://pypi.org/project/dabarqus/) to chat with your PDFs.
 - StoreFiles: A Python example of storing documents in to a memory bank (sematic index) using the Python SDK
+
+### **Notes:**
+
+1. Dabarqus Professional Edition is required for email, messaging and API support.

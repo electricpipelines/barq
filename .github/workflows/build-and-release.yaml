@@ -1,3 +1,5 @@
+# **Dabarqus** &ndash; Zero to RAG in minutes. Enable your choice of LLM to chat your PDFs, summarize emails [1](#notes) and messaging [1](#notes), and digest a vast range of facts, figures, and reports [1](#notes). A dash of genius for your LLM.
+
 name: Dabarqus Build and Release
 
 defaults:
@@ -308,10 +310,9 @@ jobs:
 
           # Create the zip archive with permission and symlink preservation
           if [[ "${{ matrix.platform }}" == linux* ]]; then
-            # -y stores symlinks as symlinks
             # -X preserves permissions
             # -r recursive
-            zip -r -y -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+            zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           elif [[ "${{ matrix.platform }}" == macos* ]]; then
             zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           else
