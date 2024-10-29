@@ -2,6 +2,10 @@
 
 **Dabarqus** &ndash; Zero to RAG in minutes. Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
 
+## Why Create Dabarqus
+
+If you're a developer, building a basic RAG solution is pretty straightforward. There are tons of tutorials and how-to's as well as Python code to reuse. But, if you're deploying your RAG solution within a company, or end-user PCs, you will also have to figure out some potentially tricky deployment and maintenance issues. That means also deploying Python, a vector database, the right embedding AI model, and possible licensing challenges. Dabarqus was created to address these issues with a stand-alone, all-in-one solution with no dependencies. It's written in low-level C++ with built in vector search capabilities, flexibility to use the embedding AI model that's best for your use case, and a REST API for easy development integration.
+
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
