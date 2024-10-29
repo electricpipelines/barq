@@ -94,7 +94,7 @@ Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For t
 9. **LLM Inference**: Chat with LLM models right through the Dabarqus API/SDKs
    - Built-in chatbot capabilities for use in your applications
 
-*Only PDFs supported for the [community edition](dabarqus.com).
+\*[Dabarqus Professional Edition](https://dabarqus.com/features#dabarqus-editions) is required for email, messaging and API support.
 
 ## Barq - Command-line interface to Dabarqus
 
