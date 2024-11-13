@@ -1,6 +1,6 @@
 # Dabarqus
 
-**Dabarqus** &ndash; Zero to RAG in minutes. Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
+**Dabarqus** &ndash; Dabarqus is a stand alone application that implements a complete RAG solution. It is designed to be easy to use and easy to integrate with your existing applications. Dabarqus includes a REST API, a command-line interface, and an admin dashboard.
 
 ## Why Create Dabarqus
 
