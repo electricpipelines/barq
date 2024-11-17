@@ -350,11 +350,11 @@ jobs:
           echo "ZIP_PATH=${ZIP_PATH}" >> $GITHUB_ENV
           echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
 
-      - name: Upload Zip Archive
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ZIP_NAME }}
-          path: ${{ env.ZIP_NAME }}
+      # - name: Upload Zip Archive
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ env.ZIP_NAME }}
+      #     path: ${{ env.ZIP_NAME }}
 
       - name: Release Zip Archive
         env:
@@ -399,9 +399,9 @@ jobs:
       - name: Save Version Tag Name
         run: echo "v${{ env.PACKAGE_VERSION }}" > tag.txt
 
-      - name: Upload Version Tag Name as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: tag-name
-          path: tag.txt
-          overwrite: true
+      # - name: Upload Version Tag Name as Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: tag-name
+      #     path: tag.txt
+      #     overwrite: true
