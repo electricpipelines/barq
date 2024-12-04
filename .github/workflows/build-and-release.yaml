@@ -267,7 +267,7 @@ jobs:
           
           # Build the pkg
           chmod +x build-pkg.sh
-          ./build-pkg.sh ${{ matrix.platform }}
+          ./build-pkg.sh ${{ matrix.platform }} "${{ env.CSC_NAME }}"
           
           PKG_PATH="Dabarqus-${PACKAGE_VERSION}-${{ matrix.platform }}.pkg"
           
