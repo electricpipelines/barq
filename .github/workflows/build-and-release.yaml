@@ -271,12 +271,40 @@ jobs:
           
           PKG_PATH="Dabarqus-${PACKAGE_VERSION}-${{ matrix.platform }}.pkg"
           
-          # Notarize the pkg
+          # Submit for notarization and capture the submission ID
           echo "Submitting pkg for notarization..."
-          xcrun notarytool submit "$PKG_PATH" --wait \
+          SUBMISSION_ID=$(xcrun notarytool submit "$PKG_PATH" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait \
+            | grep "id:" | head -n1 | awk '{print $2}')
+          
+          # Get detailed information about the submission
+          echo "Getting detailed notarization info..."
+          xcrun notarytool info "$SUBMISSION_ID" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_PASSWORD" \
             --team-id "$APPLE_TEAM_ID"
+          
+          # Get the submission log
+          echo "Getting notarization log..."
+          xcrun notarytool log "$SUBMISSION_ID" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID"
+          
+          # Check if notarization succeeded
+          STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            | grep "status:" | awk '{print $2}')
+          
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "Notarization failed with status: $STATUS"
+            exit 1
+          fi
           
           echo "Stapling notarization ticket to pkg..."
           xcrun stapler staple "$PKG_PATH"
