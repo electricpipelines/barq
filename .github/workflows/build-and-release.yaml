@@ -256,6 +256,76 @@ jobs:
 
           cd ../../..
 
+      # - name: Create Zip Archive
+      #   run: |
+          # PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
+          # ZIP_NAME="dabarqus-${{ matrix.platform }}-${PACKAGE_VERSION}.zip"
+
+          # cd out/install/${{ matrix.platform }}
+
+          # # Remove unnecessary files
+          # if [[ "${{ matrix.platform }}" == windows* ]]; then
+          #   find . -type f ! \( -name "*.dll" -o -name "*.exe" -o -path "./bin/*" \) -delete
+          # elif [[ "${{ matrix.platform }}" == linux* ]]; then
+          #   find . -type f ! \( -name "*.so" -o -path "./bin/*" \) -delete
+          #   # Ensure executables have proper permissions
+          #   find ./bin -type f -exec chmod 755 {} \;
+          #   # Preserve symlinks in lib directory
+          #   find ./lib -type l -exec chmod 777 {} \;
+          # elif [[ "${{ matrix.platform }}" == macos* ]]; then
+          #   find . -type f ! \( -name "*.dylib" -o -path "./bin/*" \) -delete
+          #   # Ensure executables have proper permissions
+          #   find ./bin -type f -exec chmod 755 {} \;
+          # fi
+
+          # find ./bin -type f -name "*.py" -delete
+
+          # # Remove empty directories
+          # find . -type d -empty -delete
+
+          # # Create the zip archive with permission and symlink preservation
+          # if [[ "${{ matrix.platform }}" == linux* ]]; then
+          #   # -X preserves permissions
+          #   # -r recursive
+          #   zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          # elif [[ "${{ matrix.platform }}" == macos* ]]; then
+          #   # zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          #   # Use ditto to preserve extended attributes and resource forks
+          #   ditto -c -k --sequesterRsrc --keepParent . "${ZIP_NAME}"
+          # else
+          #   zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
+          # fi
+
+          # # For macOS platforms, notarize the zip archive
+          # if [[ "${{ matrix.platform }}" == macos* ]]; then
+          #   # Notarize the zip archive
+          #   xcrun notarytool submit "${ZIP_NAME}" --wait \
+          #     --apple-id "${{ secrets.MACOS_APP_NOTARIZATION_USERID }}" \
+          #     --password "${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}" \
+          #     --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
+
+          #   # Staple the notarization ticket to the zip archive
+          #   xcrun stapler staple "${ZIP_NAME}"
+          # fi
+
+          # # Move the zip file to the root of the workspace
+          # mv "${ZIP_NAME}" ../../../
+
+          # ls -l ../../../${ZIP_NAME}
+
+          # # Go back to the root directory
+          # cd ../../../
+
+          # # Find the exact path of the zip file
+          # ZIP_PATH=$(find . -name "${ZIP_NAME}")
+
+          # if [ -z "$ZIP_PATH" ]; then
+          #   echo "Error: Zip file not found"
+          #   exit 1
+          # fi
+
+          # echo "ZIP_PATH=${ZIP_PATH}" >> $GITHUB_ENV
+          # echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
       - name: Create Zip Archive
         run: |
           PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
@@ -268,57 +338,50 @@ jobs:
             find . -type f ! \( -name "*.dll" -o -name "*.exe" -o -path "./bin/*" \) -delete
           elif [[ "${{ matrix.platform }}" == linux* ]]; then
             find . -type f ! \( -name "*.so" -o -path "./bin/*" \) -delete
-            # Ensure executables have proper permissions
             find ./bin -type f -exec chmod 755 {} \;
-            # Preserve symlinks in lib directory
             find ./lib -type l -exec chmod 777 {} \;
           elif [[ "${{ matrix.platform }}" == macos* ]]; then
             find . -type f ! \( -name "*.dylib" -o -path "./bin/*" \) -delete
-            # Ensure executables have proper permissions
             find ./bin -type f -exec chmod 755 {} \;
+
+            # Notarize executables and dylibs for macOS
+            echo "Notarizing executables and dylibs..."
+            find . \( -type f -perm +111 -o -name "*.dylib" \) -print0 | while IFS= read -r -d '' file; do
+              echo "Submitting $file for notarization"
+              xcrun notarytool submit "$file" --wait \
+                --apple-id "${{ secrets.MACOS_APP_NOTARIZATION_USERID }}" \
+                --password "${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}" \
+                --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
+              
+              echo "Stapling $file"
+              xcrun stapler staple "$file"
+            done
           fi
 
           find ./bin -type f -name "*.py" -delete
-
-          # Remove empty directories
           find . -type d -empty -delete
 
-          # Create the zip archive with permission and symlink preservation
+          # Create the zip archive
           if [[ "${{ matrix.platform }}" == linux* ]]; then
-            # -X preserves permissions
-            # -r recursive
             zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           elif [[ "${{ matrix.platform }}" == macos* ]]; then
-            # zip -r -X "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
-            # Use ditto to preserve extended attributes and resource forks
+            echo "Creating zip archive with ditto..."
             ditto -c -k --sequesterRsrc --keepParent . "${ZIP_NAME}"
-          else
-            zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
-          fi
 
-          # For macOS platforms, notarize the zip archive
-          if [[ "${{ matrix.platform }}" == macos* ]]; then
-            # Notarize the zip archive
+            echo "Notarizing zip archive..."
             xcrun notarytool submit "${ZIP_NAME}" --wait \
               --apple-id "${{ secrets.MACOS_APP_NOTARIZATION_USERID }}" \
               --password "${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}" \
               --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
-
-            # Staple the notarization ticket to the zip archive
-            xcrun stapler staple "${ZIP_NAME}"
+          else
+            zip -r "${ZIP_NAME}" . -x "*.DS_Store" "*.git*"
           fi
 
-          # Move the zip file to the root of the workspace
           mv "${ZIP_NAME}" ../../../
-
           ls -l ../../../${ZIP_NAME}
-
-          # Go back to the root directory
           cd ../../../
 
-          # Find the exact path of the zip file
           ZIP_PATH=$(find . -name "${ZIP_NAME}")
-
           if [ -z "$ZIP_PATH" ]; then
             echo "Error: Zip file not found"
             exit 1
