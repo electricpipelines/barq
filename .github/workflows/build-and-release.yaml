@@ -311,8 +311,10 @@ jobs:
             exit 1
           fi
           
-          echo "Stapling notarization ticket to pkg..."
+          echo "Stapling notarization ticket to $PKG_PATH"
           xcrun stapler staple "$PKG_PATH"
+          echo "PKG_PATH=${PKG_PATH}" >> $GITHUB_ENV
+          echo "PKG_NAME=${PKG_PATH}" >> $GITHUB_ENV
 
       - name: Create Zip Archive
         run: |
@@ -362,8 +364,8 @@ jobs:
               --password "${{ secrets.MACOS_APP_NOTARIZATION_PASSWORD }}" \
               --team-id "${{ secrets.MACOS_APP_NOTARIZATION_TEAMID }}"
 
-            # Staple the notarization ticket to the zip archive
-            xcrun stapler staple "${ZIP_NAME}"
+            # # Staple the notarization ticket to the zip archive
+            # xcrun stapler staple "${ZIP_NAME}"
           fi
 
           # Move the zip file to the root of the workspace
@@ -414,7 +416,7 @@ jobs:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
         run: |
           PACKAGE_VERSION=$(cat version.txt | tr -d '\n')
-          PKG_PATH="Dabarqus-${PACKAGE_VERSION}-${{ matrix.platform }}.pkg"
+          PKG_PATH="$PKG_NAME"
           
           if gh release view "v${PACKAGE_VERSION}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}" &>/dev/null; then
             echo "Release v${PACKAGE_VERSION} exists. Uploading pkg file to existing release."
