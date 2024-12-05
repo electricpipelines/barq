@@ -238,20 +238,25 @@ jobs:
         run: |
           cd out/install/${{ matrix.platform }}
 
-          # Sign executables in ./bin
-          echo "Signing executables in ./bin"
-          find ./bin -type f -perm +111 | while read file; do
-            echo "Signing executable: $file"
-            codesign --force --options runtime --sign "${{ env.CSC_NAME }}" --timestamp "$file"
-            echo "Verifying signature: $file"
-            codesign --verify --deep --strict --verbose "$file"
+          # Sign all binaries recursively (not just in bin)
+          find . -type f -perm +111 | while read file; do
+              echo "Signing executable: $file"
+              codesign --force --options runtime --timestamp --deep --sign "${{ env.CSC_NAME }}" "$file"
+              codesign --verify --deep --strict --verbose "$file"
           done
-
-          # Sign libraries in ./lib
-          echo "Signing libraries in ./lib"
-          find ./lib -type f -name "*.dylib" | while read file; do
-            echo "Signing library: $file"
-            codesign --force --options runtime --sign "${{ env.CSC_NAME }}" "$file"
+          
+          # Sign all dylibs recursively (not just in lib)
+          find . -type f -name "*.dylib" | while read file; do
+              echo "Signing library: $file"
+              codesign --force --options runtime --timestamp --deep --sign "${{ env.CSC_NAME }}" "$file"
+              codesign --verify --deep --strict --verbose "$file"
+          done
+          
+          # Sign all bundles
+          find . -type d -name "*.app" -or -name "*.framework" | while read bundle; do
+              echo "Signing bundle: $bundle"
+              codesign --force --options runtime --timestamp --deep --sign "${{ env.CSC_NAME }}" "$bundle"
+              codesign --verify --deep --strict --verbose "$bundle"
           done
 
           cd ../../..
