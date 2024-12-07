@@ -22,6 +22,8 @@ jobs:
       GH_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
       GITHUB_TOKEN: ${{ secrets.DABARQUS_FINE_GRAINED_TOKEN  }}
       RELEASE_TYPE: release
+      DOCKERHUB_USERNAME: electricpipelines
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKER_REPO_ACCESS_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -232,6 +234,28 @@ jobs:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
         run: |
             ./build.ps1 -BuildPlatform ${{ matrix.platform }}
+
+      - name: Build and Push Runtime Docker Image
+        if: matrix.platform == 'linux-nvidia'
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+        run: |
+          # Build the runtime Docker image
+          docker build -t dabarqus:${{ env.PACKAGE_VERSION }} \
+                      -t dabarqus:latest \
+                      -f Dockerfile .
+
+          # If this is a release build, push to container registry
+          if [[ "${{ env.RELEASE_TYPE }}" == "release" ]]; then
+            echo "Pushing Docker image to container registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+            
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+          fi
 
       - name: Sign macOS Binaries and Libraries
         if: startsWith(matrix.platform, 'macos')
