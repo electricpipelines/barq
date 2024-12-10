@@ -79,16 +79,6 @@ jobs:
         if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
         run: brew install ccache
 
-      - name: Configure ccache (non-self-hosted only)
-        # Github's macOS runners
-        if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
-        run: |
-          echo "CCACHE_BASEDIR=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-          echo "CCACHE_DIR=$GITHUB_WORKSPACE/.ccache" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESS=true" >> $GITHUB_ENV
-          echo "CCACHE_COMPRESSLEVEL=6" >> $GITHUB_ENV
-          echo "CCACHE_MAXSIZE=400M" >> $GITHUB_ENV
-
       - name: Cache ccache files (non-self-hosted only)
         # Github's macOS runners
         if: steps.check-runner.outputs.is_self_hosted == 'false' && startsWith(matrix.platform, 'macos')
@@ -107,15 +97,6 @@ jobs:
           key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ hashFiles('**/*.cpp', '**/*.h', '**/*.hpp') }}
           restore-keys: |
             ${{ runner.os }}-ccache-${{ matrix.platform }}-
-
-      - name: Cache vcpkg files (Docker builds)
-        if: steps.check-for-docker.outputs.has_docker == 'true'
-        uses: actions/cache@v4
-        with:
-          path: ~/.vcpkg-cache
-          key: ${{ runner.os }}-vcpkg-${{ matrix.platform }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
-          restore-keys: |
-            ${{ runner.os }}-vcpkg-${{ matrix.platform }}-
 
       - name: Extract Package Version from version.txt
         run: |
@@ -221,9 +202,6 @@ jobs:
         env:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
         run: |
-          # Create cache directories if they don't exist
-          mkdir -p ~/.ccache
-          mkdir -p ~/.vcpkg-cache
 
           # Convert Windows path to Docker-compatible path
           WORKSPACE_PATH=$(cygpath -w "${{ github.workspace }}" | sed 's/\\/\//g')
@@ -232,21 +210,13 @@ jobs:
 
           docker run --rm --gpus all \
             -v "${WORKSPACE_PATH}:/dabarqus_src" \
-            -v "${HOME}/.ccache:/ccache" \
-            -v "${HOME}/.vcpkg-cache:/vcache" \
+            -v "${HOME}/.ccache:/root/.ccache" \
             -e BUILD_PLATFORM=${{ matrix.platform }} \
             -e GH_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
             -e GITHUB_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
             -e GITHUB_DEPLOYMENT_REPO_OWNER=${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }} \
             -e GITHUB_DEPLOYMENT_REPO_NAME=${{ env.GITHUB_DEPLOYMENT_REPO_NAME }} \
             -e RELEASE_TYPE=${{ env.RELEASE_TYPE }} \
-            -e CCACHE_DIR=/ccache \
-            -e CCACHE_COMPRESS=true \
-            -e CCACHE_COMPRESSLEVEL=6 \
-            -e CCACHE_MAXSIZE=10G \
-            -e CCACHE_SLOPPINESS=pch_defines,time_macros,locale \
-            -e CCACHE_NOHASHDIR=true \
-            -e CCACHE_BASEDIR=/dabarqus_src \
             dabarqus-builder
 
       - name: Native Build, Package and Release to GitHub
