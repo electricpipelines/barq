@@ -24,6 +24,9 @@ jobs:
       RELEASE_TYPE: release
       DOCKERHUB_USERNAME: electricpipelines
       DOCKERHUB_TOKEN: ${{ secrets.DOCKER_REPO_ACCESS_TOKEN }}
+      CCACHE_DIR: /ccache
+      VCPKG_DEFAULT_BINARY_CACHE: /vcache
+
     strategy:
       fail-fast: false
       matrix:
@@ -97,6 +100,24 @@ jobs:
           key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-ccache-${{ matrix.platform }}-
+
+      - name: Cache ccache files (Docker builds)
+        if: steps.check-for-docker.outputs.has_docker == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ hashFiles('**/*.cpp', '**/*.h', '**/*.hpp') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ matrix.platform }}-
+
+      - name: Cache vcpkg files (Docker builds)
+        if: steps.check-for-docker.outputs.has_docker == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.vcpkg-cache
+          key: ${{ runner.os }}-vcpkg-${{ matrix.platform }}-${{ hashFiles('vcpkg.json', 'vcpkg-configuration.json') }}
+          restore-keys: |
+            ${{ runner.os }}-vcpkg-${{ matrix.platform }}-
 
       - name: Extract Package Version from version.txt
         run: |
@@ -202,8 +223,9 @@ jobs:
         env:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
         run: |
-          mkdir -p out/ccache
-          mkdir -p out/vcache
+          # Create cache directories if they don't exist
+          mkdir -p ~/.ccache
+          mkdir -p ~/.vcpkg-cache
 
           # Convert Windows path to Docker-compatible path
           WORKSPACE_PATH=$(cygpath -w "${{ github.workspace }}" | sed 's/\\/\//g')
@@ -212,14 +234,21 @@ jobs:
 
           docker run --rm --gpus all \
             -v "${WORKSPACE_PATH}:/dabarqus_src" \
-            -v "${WORKSPACE_PATH}/out/ccache:/ccache" \
-            -v "${WORKSPACE_PATH}/out/vcache:/vcache" \
+            -v "${HOME}/.ccache:/ccache" \
+            -v "${HOME}/.vcpkg-cache:/vcache" \
             -e BUILD_PLATFORM=${{ matrix.platform }} \
             -e GH_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
             -e GITHUB_TOKEN=${{ secrets.DABARQUS_FINE_GRAINED_TOKEN }} \
             -e GITHUB_DEPLOYMENT_REPO_OWNER=${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }} \
             -e GITHUB_DEPLOYMENT_REPO_NAME=${{ env.GITHUB_DEPLOYMENT_REPO_NAME }} \
             -e RELEASE_TYPE=${{ env.RELEASE_TYPE }} \
+            -e CCACHE_DIR=/ccache \
+            -e CCACHE_COMPRESS=true \
+            -e CCACHE_COMPRESSLEVEL=6 \
+            -e CCACHE_MAXSIZE=10G \
+            -e CCACHE_SLOPPINESS=pch_defines,time_macros,locale \
+            -e CCACHE_NOHASHDIR=true \
+            -e CCACHE_BASEDIR=/dabarqus_src \
             dabarqus-builder
 
       - name: Native Build, Package and Release to GitHub
@@ -234,28 +263,6 @@ jobs:
           RELEASE_TYPE: ${{ env.RELEASE_TYPE }}
         run: |
             ./build.ps1 -BuildPlatform ${{ matrix.platform }}
-
-      - name: Build and Push Runtime Docker Image
-        if: matrix.platform == 'linux-nvidia'
-        env:
-          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
-        run: |
-          # Build the runtime Docker image
-          docker build -t dabarqus:${{ env.PACKAGE_VERSION }} \
-                      -t dabarqus:latest \
-                      -f Dockerfile .
-
-          # If this is a release build, push to container registry
-          if [[ "${{ env.RELEASE_TYPE }}" == "release" ]]; then
-            echo "Pushing Docker image to container registry..."
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
-            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
-            
-            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
-            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
-          fi
 
       - name: Sign macOS Binaries and Libraries
         if: startsWith(matrix.platform, 'macos')
@@ -452,6 +459,37 @@ jobs:
             else
               gh release create "v${PACKAGE_VERSION}" "${PKG_PATH}" --repo "${PUBLISH_OWNER}/${PUBLISH_REPO}"
             fi
+          fi
+
+      - name: Build and Push Runtime Docker Image
+        if: matrix.platform == 'linux-nvidia'
+        env:
+          PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
+        run: |
+          # Build the runtime Docker image
+          docker build -t dabarqus:${{ env.PACKAGE_VERSION }} \
+                      -t dabarqus:latest \
+                      -f Dockerfile .
+
+          # If this is a release build, push to container registry
+          if [[ "${{ env.RELEASE_TYPE }}" == "release" ]]; then
+            echo "Pushing Docker image to container registry..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+            
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+            
+            # Set package visibility to public
+            echo "Setting package visibility to public..."
+            gh api \
+              --method PATCH \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              /orgs/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/packages/container/dabarqus/visibility \
+              -f visibility=public
           fi
 
       - name: Create and Push Git Tag if Not Exists
