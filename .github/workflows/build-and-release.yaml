@@ -24,8 +24,6 @@ jobs:
       RELEASE_TYPE: release
       DOCKERHUB_USERNAME: electricpipelines
       DOCKERHUB_TOKEN: ${{ secrets.DOCKER_REPO_ACCESS_TOKEN }}
-      CCACHE_DIR: /ccache
-      VCPKG_DEFAULT_BINARY_CACHE: /vcache
 
     strategy:
       fail-fast: false
