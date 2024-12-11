@@ -27,7 +27,7 @@ If you're a developer, building a basic RAG solution is pretty straightforward. 
 
 Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For the CUDA (cublas) version, you will need to install the NVIDIA driver. The CPU version does not require any additional software. Note that to use the CUDA version, you will need to have an NVIDIA GPU with CUDA support, and to download the CUDA version of Dabarqus.
 
-0. To install NVIDIA drivers on Ubuntu:
+0. To install NVIDIA drivers on Ubuntu (if you have an NVIDIA GPU), run the following command:
 
     ```bash
     sudo ubuntu-drivers install
@@ -46,6 +46,13 @@ Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For t
 
 ### macOS
 
+For package file downloads, do the following:
+
+1. Double click the Dabarqus-macos-DOWNLOADED_VERSION.pkg and install
+2. After installation, open your browser and navigate to `http://localhost:6568/admin`
+
+For zip file downloads, do the following:
+
 1. Unzip the Dabarqus file into a folder
 
     ```bash
@@ -59,7 +66,7 @@ Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For t
 ### Windows
 
 1. Double click the Dabarqus-windows-DOWNLOADED_VERSION.exe and install
-2. Double click the Dabarqus icon
+2. Double click the Dabarqus icon or navigate to `http://localhost:6568/admin`
 
 ## Features
 
