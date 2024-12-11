@@ -429,25 +429,35 @@ jobs:
           fi
 
       - name: Build and Push Runtime Docker Image
-        if: matrix.platform == 'linux-nvidia'
+        if: matrix.platform == 'linux' || matrix.platform == 'linux-nvidia'
         env:
           PACKAGE_VERSION: ${{ env.PACKAGE_VERSION }}
         run: |
+          # Determine Docker base image based on platform
+          BASE_IMAGE="ubuntu:22.04"
+          TAG_SUFFIX=""
+          if [[ "${{ matrix.platform }}" == "linux-nvidia" ]]; then
+            BASE_IMAGE="nvidia/cuda:12.1.0-base-ubuntu22.04"
+            TAG_SUFFIX="-nvidia"
+          fi
+
           # Build the runtime Docker image
-          docker build -t dabarqus:${{ env.PACKAGE_VERSION }} \
-                      -t dabarqus:latest \
-                      -f Dockerfile .
+          docker build \
+            --build-arg BASE_IMAGE=${BASE_IMAGE} \
+            --build-arg PLATFORM=${{ matrix.platform }} \
+            -t dabarqus:${{ env.PACKAGE_VERSION }}${TAG_SUFFIX} \
+            -t dabarqus:latest${TAG_SUFFIX} .
 
           # If this is a release build, push to container registry
           if [[ "${{ env.RELEASE_TYPE }}" == "release" ]]; then
             echo "Pushing Docker image to container registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
-            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
-            docker tag dabarqus:${{ env.PACKAGE_VERSION }} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }}${TAG_SUFFIX} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}${TAG_SUFFIX}
+            docker tag dabarqus:${{ env.PACKAGE_VERSION }}${TAG_SUFFIX} ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest${TAG_SUFFIX}
             
-            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}
-            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:${{ env.PACKAGE_VERSION }}${TAG_SUFFIX}
+            docker push ghcr.io/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/dabarqus:latest${TAG_SUFFIX}
             
             # Set package visibility to public
             echo "Setting package visibility to public..."
