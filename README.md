@@ -25,7 +25,7 @@ If you're a developer, building a basic RAG solution is pretty straightforward. 
 
 ### Ubuntu
 
-Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For the CUDA (cublas) version, you will need to install the NVIDIA driver. The CPU version does not require any additional software. Note that to use the CUDA version, you will need to have an NVIDIA GPU with CUDA support, and to download the CUDA version of Dabarqus.
+Dabarqus works on CPU only, or can use NVIDIA CUDA for higher performance. For the CUDA (aka nvidia cublas) version, you will need to install the NVIDIA driver. The CPU version does not require any additional software. Note that to use the CUDA version, you will need to have an NVIDIA GPU with CUDA support, and to download the CUDA version of Dabarqus.
 
 0. To install NVIDIA drivers on Ubuntu (if you have an NVIDIA GPU), run the following command:
 
