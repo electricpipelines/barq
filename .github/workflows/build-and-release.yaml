@@ -94,9 +94,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ hashFiles('**/*.cpp', '**/*.h', '**/*.hpp') }}
-          restore-keys: |
-            ${{ runner.os }}-ccache-${{ matrix.platform }}-
+          key: ${{ runner.os }}-ccache-${{ matrix.platform }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-ccache-${{ matrix.platform }}
 
       - name: Extract Package Version from version.txt
         run: |
@@ -456,7 +455,7 @@ jobs:
               --method PATCH \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              /orgs/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/packages/container/dabarqus/visibility \
+              orgs/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/packages/container/dabarqus/visibility \
               -f visibility=public
           fi
 
