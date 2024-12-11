@@ -161,7 +161,7 @@ Examples of Dabarqus in action can be found in this repo under **examples**.
 
 - PythonPDFChatbot-RESTAPI: An example chatbot program using Dabarqus via the REST API to chat with your PDFs.
 - PythonPDFChatbot-PythonSDK: An example chatbot program using Dabarqus via the [Python SDK](https://pypi.org/project/dabarqus/) to chat with your PDFs.
-- StoreFiles: A Python example of storing documents in to a memory bank (sematic index) using the Python SDK
+- StoreFiles: A Python example of storing documents in to a memory bank (semantic index) using the Python SDK
 
 ### **Notes:**
 
