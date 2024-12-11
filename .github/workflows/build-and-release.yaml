@@ -443,6 +443,12 @@ jobs:
             PACKAGE_NAME="dabarqus-nvidia"
           fi
 
+          echo "Building Docker image for platform ${{ matrix.platform }}"
+          echo "Base image: ${BASE_IMAGE}"
+          echo "Package name: ${PACKAGE_NAME}"
+          echo "Package version: ${{ env.PACKAGE_VERSION }}"
+          echo "Release type: ${{ env.RELEASE_TYPE }}"
+
           # Build the runtime Docker image
           docker build \
             --build-arg BASE_IMAGE=${BASE_IMAGE} \
@@ -467,7 +473,7 @@ jobs:
               --method PATCH \
               -H "Accept: application/vnd.github+json" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
-              /orgs/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/packages/container/${PACKAGE_NAME}/visibility \
+              orgs/${{ env.GITHUB_DEPLOYMENT_REPO_OWNER }}/packages/container/${PACKAGE_NAME}/visibility \
               -f visibility=public || echo "Warning: Could not set package visibility. The package may need to be manually set to public."
           fi
 
