@@ -483,7 +483,7 @@ jobs:
           echo "Checking for existing tag for version $PACKAGE_VERSION..."
 
           # Fetch tags to ensure we have the latest tags in the local git history
-          git fetch --tags
+          git fetch --tags >/dev/null 2>&1;
 
           # Check if the tag already exists
           if git rev-parse "v$PACKAGE_VERSION" >/dev/null 2>&1; then
