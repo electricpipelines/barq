@@ -38,9 +38,9 @@ jobs:
           - platform: windows-nvidia
             runner: [self-hosted, windows, cuda]
           - platform: linux
-            runner: [self-hosted, docker]
+            runner: [self-hosted, linux]
           - platform: linux-nvidia
-            runner: [self-hosted, docker, cuda]
+            runner: [self-hosted, linux, cuda]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
